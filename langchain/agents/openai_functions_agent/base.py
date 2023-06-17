@@ -106,13 +106,19 @@ def _parse_ai_message(message: BaseMessage) -> Union[AgentAction, AgentFinish]:
     if function_call:
         function_call = message.additional_kwargs["function_call"]
         function_name = function_call["name"]
-        try:
-            _tool_input = json.loads(function_call["arguments"])
-        except JSONDecodeError:
-            raise OutputParserException(
-                f"Could not parse tool input: {function_call} because "
-                f"the `arguments` is not valid JSON."
-            )
+        # HACK HACK HACK:
+        # Sometimes OpenAI hallucinates and uses python instead of python_repl_ast
+        if function_name == "python":
+            function_name = "python_repl_ast"
+            _tool_input = function_call["arguments"]
+        else:
+            try:
+                _tool_input = json.loads(function_call["arguments"])
+            except JSONDecodeError:
+                raise OutputParserException(
+                    f"Could not parse tool input: {function_call} because "
+                    f"the `arguments` is not valid JSON."
+                )
 
         # HACK HACK HACK:
         # The code that encodes tool input into Open AI uses a special variable
