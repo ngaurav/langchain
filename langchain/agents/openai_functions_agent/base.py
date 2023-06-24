@@ -121,10 +121,10 @@ def _parse_ai_message(message: BaseMessage) -> Union[AgentAction, AgentFinish]:
             # We unpack the argument here if it exists.
             # Open AI does not support passing in a JSON array as an argument.
             if "__arg1" in function_call["arguments"]:
-                _tool_input = function_call["arguments"].split('"__arg1": "')[1].split('"\n}')[0]
+                tool_input = function_call["arguments"].split('"__arg1": "')[1].split('"\n}')[0]
             else:
                 try:
-                    _tool_input = json.loads(function_call["arguments"])
+                    tool_input = json.loads(function_call["arguments"])
                 except JSONDecodeError:
                     raise OutputParserException(
                         f"Could not parse tool input: {function_call} because "
